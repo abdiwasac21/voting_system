@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote</title>
+   <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Choose an Election to Vote</h1>
+
+    {% if error_message %}
+        <p class="error">{{ error_message }}</p>  <!-- Show error message -->
+    {% endif %}
+
+    {% if elections %}
+        <form method="POST">
+            <label for="election">Select Election Event:</label>
+            <select name="election" id="election" onchange="this.form.submit()" required>
+                <option value="" disabled selected>Select an election</option>
+                {% for event in elections %}
+                    <option value="{{ event['_id'] }}"
+                        {% if selected_election_id == event['_id'] %}selected{% endif %}>
+                        {{ event['election'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if selected_candidates %}
+                <label for="candidates">Select Candidate:</label>
+                <select name="candidates" id="candidates" required>
+                    {% for candidate in selected_candidates %}
+                        <option value="{{ candidate['name'] }}">
+                            {{ candidate['name'] }} - {{ candidate['party'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <p class="error">No candidates available for this election.</p>
+            {% endif %}
+
+            <button type="submit">Vote</button>
+        </form>
+    {% else %}
+        <p class="message">No election events available.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Polling Stations</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="stationName" class="form-label">Station Name</label>
+        <input type="text" class="form-control" id="stationName" name="stationName" required>
+    </div>
+    <div class="mb-3">
+        <label for="location" class="form-label">Location</label>
+        <input type="text" class="form-control" id="location" name="location" required>
+    </div>
+    <div class="mb-3">
+        <label for="capacity" class="form-label">Capacity</label>
+        <input type="number" class="form-control" id="capacity" name="capacity" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Station</button>
+</form>
+<hr>
+<h2>Existing Polling Stations</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Station Name</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for station in stations %}
+        <tr>
+            <td>{{ station.station_name }}</td>
+            <td>{{ station.location }}</td>
+            <td>{{ station.assigned_voters }}</td>
+            <td>
+                <form method="POST" action="/polling_station/delete/{{ station._id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+                <form method="POST" action="/polling_station/update/{{ station._id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-warning btn-sm">Edit</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Online Voters</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="voterName" class="form-label">Voter Name</label>
+        <input type="text" class="form-control" id="voterName" name="voterName" required>
+    </div>
+    <div class="mb-3">
+        <label for="voterID" class="form-label">Voter ID</label>
+        <input type="text" class="form-control" id="voterID" name="voterID" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Voter</button>
+</form>
+<hr>
+<h2>Existing Voters</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Voter ID</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for voter in voters %}
+        <tr>
+            <td>{{ voter.voterName }}</td>
+            <td>{{ voter.voterID }}</td>
+            <td>{{ voter.email }}</td>
+            <td>
+                <form method="POST" action="/online_voters/delete/{{ voter._id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+                <form method="POST" action="/online_voters/update/{{ voter._id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-warning btn-sm">Edit</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
