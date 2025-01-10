@@ -3,16 +3,16 @@
 <h1>Polling Stations</h1>
 <form method="POST">
     <div class="mb-3">
-        <label for="stationName" class="form-label">Station Name</label>
-        <input type="text" class="form-control" id="stationName" name="stationName" required>
+        <label for="station_name" class="form-label">Station Name</label>
+        <input type="text" class="form-control" id="station_name" name="station_name" required>
     </div>
     <div class="mb-3">
         <label for="location" class="form-label">Location</label>
         <input type="text" class="form-control" id="location" name="location" required>
     </div>
     <div class="mb-3">
-        <label for="capacity" class="form-label">Capacity</label>
-        <input type="number" class="form-control" id="capacity" name="capacity" required>
+        <label for="assigned_voters" class="form-label">assigned_voters</label>
+        <input type="number" class="form-control" id="assigned_voters" name="assigned_voters" required>
     </div>
     <button type="submit" class="btn btn-primary">Add Station</button>
 </form>
@@ -23,7 +23,7 @@
         <tr>
             <th>Station Name</th>
             <th>Location</th>
-            <th>Capacity</th>
+            <th>assigned_voters</th>
             <th>Actions</th>
         </tr>
     </thead>

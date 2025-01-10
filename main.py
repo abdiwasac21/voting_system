@@ -215,8 +215,32 @@ def manage_polling_station():
 
     return render_template('manage_polling_station.html', stations=stations)
 
+@app.route('/manage_polling_station/update_votes', methods=['POST'])
+def update_votes():
+    for station_id, votes_cast in request.form.items():
+        if station_id.startswith('votes_cast_'):
+            station_id = station_id.replace('votes_cast_', '')
+            try:
+                votes_cast = int(votes_cast)
+                station = mongo.db.polling_station.find_one({'_id': ObjectId(station_id)})
 
+                if not station:
+                    flash(f"Polling station with ID {station_id} not found.", 'danger')
+                    continue
 
+                if 0 <= votes_cast <= station['assigned_voters']:
+                    mongo.db.polling_station.update_one(
+                        {'_id': ObjectId(station_id)},
+                        {'$set': {'votes_cast': votes_cast}}
+                    )
+                    flash(f"Votes updated for {station['station_name']}.", 'success')
+                else:
+                    flash(f"Vote count for {station['station_name']} must be between 0 and {station['assigned_voters']}.", 'danger')
+            except ValueError:
+                flash("Invalid input. Votes must be an integer.", 'danger')
+
+    return redirect('/manage_polling_station')
+# Results Management (Admin-Only)
 # Results Management (Admin-Only)
 @app.route('/results', methods=['GET', 'POST'])
 def results():
@@ -224,13 +248,152 @@ def results():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        data = request.form.to_dict()
-        mongo.db.results.insert_one(data)
-        flash("Result added successfully.", "success")
+        # Calculate and save results
+        aggregate_results = mongo.db.votes.aggregate([
+            {
+                '$group': {
+                    '_id': {
+                        'election_id': '$election_id',
+                        'candidate': '$candidate'
+                    },
+                    'total_votes': {'$sum': 1}
+                }
+            },
+            {
+                '$lookup': {
+                    'from': 'election_type',
+                    'localField': '_id.election_id',
+                    'foreignField': '_id',
+                    'as': 'election_info'
+                }
+            },
+            {
+                '$lookup': {
+                    'from': 'candidates',
+                    'localField': '_id.candidate',
+                    'foreignField': 'name',
+                    'as': 'candidate_info'
+                }
+            },
+            {
+                '$unwind': '$election_info'  # Ensure we get one match per election
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'election_id': '$_id.election_id',
+                    'election_name': '$election_info.election',  # Include the election name
+                    'party': {'$arrayElemAt': ['$election_info.candidates.party', 0]},  # Get the party name of the candidate
+                    'candidate': '$_id.candidate',
+                    'candidate_info': {'$arrayElemAt': ['$candidate_info', 0]},
+                    'total_votes': 1
+                }
+            }
+        ])
+
+        # Save results to the results collection
+        results_to_save = list(aggregate_results)
+        mongo.db.results.delete_many({})  # Clear previous results
+        mongo.db.results.insert_many(results_to_save)
+        flash("Results calculated and saved successfully.", "success")
         return redirect(url_for('results'))
 
+    # Fetch saved results from the results collection
     results = list(mongo.db.results.find())
     return render_template('results.html', results=results)
+
+
+# Online Voters: Delete
+@app.route('/online_voters/delete/<voter_id>', methods=['POST'])
+def delete_voter(voter_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    mongo.db.online_voters.delete_one({'_id': ObjectId(voter_id)})
+    flash("Voter deleted successfully.", "success")
+    return redirect(url_for('online_voters'))
+
+
+# Online Voters: Update
+@app.route('/online_voters/update/<voter_id>', methods=['GET', 'POST'])
+def update_voter(voter_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    voter = mongo.db.online_voters.find_one({'_id': ObjectId(voter_id)})
+    if not voter:
+        flash("Voter not found.", "danger")
+        return redirect(url_for('online_voters'))
+
+    if request.method == 'POST':
+        updated_data = request.form.to_dict()
+        mongo.db.online_voters.update_one({'_id': ObjectId(voter_id)}, {'$set': updated_data})
+        flash("Voter updated successfully.", "success")
+        return redirect(url_for('online_voters'))
+
+    return render_template('update_voter.html', voter=voter)
+
+
+# Polling Station: Delete
+@app.route('/polling_station/delete/<station_id>', methods=['POST'])
+def delete_station(station_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    mongo.db.polling_station.delete_one({'_id': ObjectId(station_id)})
+    flash("Polling station deleted successfully.", "success")
+    return redirect(url_for('polling_station'))
+
+
+# Polling Station: Update
+@app.route('/polling_station/update/<station_id>', methods=['GET', 'POST'])
+def update_station(station_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    station = mongo.db.polling_station.find_one({'_id': ObjectId(station_id)})
+    if not station:
+        flash("Polling station not found.", "danger")
+        return redirect(url_for('polling_station'))
+
+    if request.method == 'POST':
+        updated_data = request.form.to_dict()
+        mongo.db.polling_station.update_one({'_id': ObjectId(station_id)}, {'$set': updated_data})
+        flash("Polling station updated successfully.", "success")
+        return redirect(url_for('polling_station'))
+
+    return render_template('update_station.html', station=station)
+
+
+# Election Events: Delete
+@app.route('/election_events/delete/<event_id>', methods=['POST'])
+def delete_event(event_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    mongo.db.electionEvents.delete_one({'_id': ObjectId(event_id)})
+    flash("Election event deleted successfully.", "success")
+    return redirect(url_for('election_events'))
+
+
+# Election Events: Update
+@app.route('/election_events/update/<event_id>', methods=['GET', 'POST'])
+def update_event(event_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    event = mongo.db.electionEvents.find_one({'_id': ObjectId(event_id)})
+    if not event:
+        flash("Election event not found.", "danger")
+        return redirect(url_for('election_events'))
+
+    if request.method == 'POST':
+        updated_data = request.form.to_dict()
+        mongo.db.electionEvents.update_one({'_id': ObjectId(event_id)}, {'$set': updated_data})
+        flash("Election event updated successfully.", "success")
+        return redirect(url_for('election_events'))
+
+    return render_template('update_event.html', event=event)
 
 
 if __name__ == '__main__':

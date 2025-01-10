@@ -1,66 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Manage Polling Stations</h1>
+    <h1 class="text-center mb-4">Manage Polling Stations and Votes</h1>
 
-    <!-- Form to Add or Select Polling Station -->
-    <form method="POST">
-        <div class="mb-3">
-            <label for="station_id" class="form-label">Select Polling Station</label>
-            <select class="form-select" id="station_id" name="station_id">
-                <option value="" selected>-- Select an Existing Polling Station --</option>
+    <!-- Table for Updating Votes -->
+    <h2 class="text-center mb-4">Update Votes for Polling Stations</h2>
+    <form method="POST" action="/manage_polling_station/update_votes">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Station Name</th>
+                    <th>Location</th>
+                    <th>Assigned Voters</th>
+                    <th>Votes Cast</th>
+                    <th>Update Votes Cast</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for station in stations %}
-                <option value="{{ station._id }}">{{ station.station_name }} ({{ station.location }})</option>
+                <tr>
+                    <td>{{ station.station_name }}</td>
+                    <td>{{ station.location }}</td>
+                    <td>{{ station.assigned_voters }}</td>
+                    <td>{{ station.votes_cast if station.votes_cast is not none else 0 }}</td>
+                    <td>
+                        <input type="number"
+                               class="form-control"
+                               name="votes_cast_{{ station._id }}"
+                               min="0"
+                               max="{{ station.assigned_voters }}"
+                               value="{{ station.votes_cast if station.votes_cast is not none else 0 }}"
+                               required>
+                    </td>
+                </tr>
                 {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="stationName" class="form-label">Station Name</label>
-            <input type="text" class="form-control" id="stationName" name="stationName" placeholder="Enter polling station name" required>
-        </div>
-        <div class="mb-3">
-            <label for="location" class="form-label">Location</label>
-            <input type="text" class="form-control" id="location" name="location" placeholder="Enter location" required>
-        </div>
-        <div class="mb-3">
-            <label for="capacity" class="form-label">Capacity</label>
-            <input type="number" class="form-control" id="capacity" name="capacity" placeholder="Enter max capacity" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-success mt-3">Update Votes</button>
     </form>
-
-    <hr class="my-4">
-
-    <!-- Table for Existing Polling Stations -->
-    <h2 class="text-center mb-4">Existing Polling Stations</h2>
-    <table class="table table-striped table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>Station Name</th>
-                <th>Location</th>
-                <th>Capacity</th>
-                <th>Votes</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for station in stations %}
-            <tr>
-                <td>{{ station.station_name }}</td>
-                <td>{{ station.location }}</td>
-                <td>{{ station.capacity }}</td>
-                <td>{{ station.votes }} / {{ station.capacity }}</td>
-                <td>
-                    <form method="POST" action="/polling_station/delete/{{ station._id }}" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                    <form method="POST" action="/polling_station/update/{{ station._id }}" style="display:inline;">
-                        <button type="submit" class="btn btn-warning btn-sm">Edit</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 {% endblock %}

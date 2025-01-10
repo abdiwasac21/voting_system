@@ -23,16 +23,15 @@
         <tr>
             <th>Name</th>
             <th>Voter ID</th>
-            <th>Email</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for voter in voters %}
         <tr>
-            <td>{{ voter.voterName }}</td>
-            <td>{{ voter.voterID }}</td>
-            <td>{{ voter.email }}</td>
+            <td>{{ voter.username }}</td>
+            <td>{{ voter.voterId }}</td>
+
             <td>
                 <form method="POST" action="/online_voters/delete/{{ voter._id }}" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
