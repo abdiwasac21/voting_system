@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Update Election Event</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="name" class="form-label">Event Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ event.name }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="start_date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ event.start_date }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Event</button>
+</form>
+{% endblock %}

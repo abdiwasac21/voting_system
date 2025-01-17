@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Update Voter</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="voterName" class="form-label">Voter Name</label>
+        <input type="text" class="form-control" id="voterName" name="voterName" value="{{ voter.voterName }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="voterID" class="form-label">Voter ID</label>
+        <input type="text" class="form-control" id="voterID" name="voterID" value="{{ voter.voterID }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ voter.email }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Voter</button>
+</form>
+{% endblock %}
