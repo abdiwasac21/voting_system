@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from datetime import datetime
+from collections import defaultdict
+
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Secret key for session management
@@ -17,9 +19,13 @@ def home():
     # Fetch the current voting results
     results = list(mongo.db.results.find())
 
-    # Render the home page for both voters and admins
-    return render_template('home.html', results=results)
+    # Group results by election type
+    grouped_results = defaultdict(list)
+    for result in results:
+        grouped_results[result['election_name']].append(result)
 
+    # Render the home page for both voters and admins
+    return render_template('home.html', grouped_results=grouped_results)
 
 # Admin Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -300,7 +306,13 @@ def results():
 
     # Fetch saved results from the results collection
     results = list(mongo.db.results.find())
-    return render_template('results.html', results=results)
+
+    # Group results by election type
+    grouped_results = defaultdict(list)
+    for result in results:
+        grouped_results[result['election_name']].append(result)
+
+    return render_template('results.html', grouped_results=grouped_results)
 
 
 # Online Voters: Delete

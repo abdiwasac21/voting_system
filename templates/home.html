@@ -20,22 +20,29 @@
             <h2 class="text-center text-success">Live Voting Results</h2>
             <div class="row justify-content-center mt-4">
                 <div class="col-md-8">
+                    {% for election_name, results in grouped_results.items() %}
+                    <h3 class="text-center">{{ election_name }}</h3>
                     <table class="table table-bordered table-hover text-center">
                         <thead class="table-dark">
                             <tr>
+                                <th>Election Name</th>
                                 <th>Candidate</th>
-                                <th>Votes</th>
+                                <th>Party</th>
+                                <th>Total Votes</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for result in results %}
                             <tr>
-                                <td>{{ result['name'] }}</td>
-                                <td>{{ result['votes'] }}</td>
+                                <td>{{ result.election_name }}</td>
+                                <td>{{ result.candidate }}</td>
+                                <td>{{ result.party if result.party else 'N/A' }}</td>
+                                <td>{{ result.total_votes }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% endfor %}
                 </div>
             </div>
         </section>
