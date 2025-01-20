@@ -282,6 +282,14 @@ def results():
                 }
             },
             {
+                '$lookup': {
+                    'from': 'polling_station',
+                    'localField': '_id.election_id',
+                    'foreignField': 'election_id',
+                    'as': 'polling_info'
+                }
+            },
+            {
                 '$unwind': '$election_info'  # Ensure we get one match per election
             },
             {
@@ -292,7 +300,8 @@ def results():
                     'party': {'$arrayElemAt': ['$election_info.candidates.party', 0]},  # Get the party name of the candidate
                     'candidate': '$_id.candidate',
                     'candidate_info': {'$arrayElemAt': ['$candidate_info', 0]},
-                    'total_votes': 1
+                    'total_votes': 1,
+                    'votes_cast': {'$sum': '$polling_info.votes_cast'}  # Sum of votes_cast from polling stations
                 }
             }
         ])
